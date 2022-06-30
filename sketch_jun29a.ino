@@ -22,38 +22,43 @@
 //----------------------------------------------------------------------------------------------
 
 //прерывания
-
+#define LEFT_ENC_INT 0
+#define RIGHT_ENC_INT 1
 
 //скорость работы ардуино
 #define SERIAL_BOAD 115200
 //----------------------------------------------------------------------------------------------
 
+//шаг за прерывание мм/см
+#define STEP_MM 5.075
+#define STEP_SM 0.5075
+
+//число прерываний на сантиметр
+#define IMP_CM 1.97
+//----------------------------------------------------------------------------------------------
 
 //переменная хранящая код с геймпада на телефоне
 char res;
 
+//переменные прерываний энкодеков
+volatile uint16_t leftImp = 0;
+volatile uint16_t rightImp = 0;
 
+int currSpd = 0;
 
+void leftEncInt()//обработчик прерываний левого энкодера
+{
+  leftImp++;
+}
+
+void rightEncInt()//обработчик прерываний правого энкодера
+{
+  rightImp++;
+}
 
 void parser()//ф-ия парсер для движения робота(коды задаются в приложении на телефоне)
 {
-  
-}
-
-
-
-
-void setup() {
-  Serial.begin(SERIAL_BOAD);
-  pinMode(UP_RIGHT, OUTPUT);
-  pinMode(UP_LEFT, OUTPUT);
-  pinMode(DOWN_RIGHT, OUTPUT);
-  pinMode(DOWN_LEFT, OUTPUT);
-}
-
-void loop() {
-  if (Serial.available())
-    res = Serial.read();
+   res = Serial.read();
    switch (res)
    {
     case 'F':
@@ -95,4 +100,27 @@ void loop() {
       analogWrite(UP_LEFT, 0);
       break;
    } 
+}
+
+//void speedControl()//ф-ия контроля скорости движения 
+//{
+//  if (){
+//    
+//  }
+//}
+
+void setup() {
+  Serial.begin(SERIAL_BOAD);
+  pinMode(UP_RIGHT, OUTPUT);
+  pinMode(UP_LEFT, OUTPUT);
+  pinMode(DOWN_RIGHT, OUTPUT);
+  pinMode(DOWN_LEFT, OUTPUT);  
+  attachInterrupt(LEFT_ENC_INT, leftEncInt, CHANGE);
+  attachInterrupt(RIGHT_ENC_INT, rightEncInt, CHANGE);
+}
+
+void loop() {
+  if (Serial.available()){
+    parser();
+  }
 }
